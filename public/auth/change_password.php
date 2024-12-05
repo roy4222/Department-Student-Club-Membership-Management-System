@@ -1,6 +1,6 @@
 <?php
-require_once '../includes/header.php';
-require_once '../config/database.php';
+require_once '../../includes/header.php';
+require_once '../../config/database.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $old_password = MD5($_POST['old_password']);
@@ -61,4 +61,4 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 </div>
 
-<?php require_once '../includes/footer.php'; ?>
+<?php require_once '../../includes/footer.php'; ?>

@@ -1,10 +1,10 @@
 <?php
-require_once '../includes/header.php';
-require_once '../config/database.php';
+require_once '../../includes/header.php';
+require_once '../../config/database.php';
 
 // 檢查權限
 if (!in_array($_SESSION['role'], ['admin', 'staff'])) {
-    header('Location: dashboard.php');
+    header('Location: ../dashboard.php');
     exit();
 }
 
@@ -71,7 +71,7 @@ $members = $stmt->fetchAll();
                             <input type="date" name="payment_date" class="form-control" value="<?php echo date('Y-m-d'); ?>" required>
                         </div>
                         <button type="submit" class="btn btn-primary">新增繳費記錄</button>
-                        <a href="fees.php" class="btn btn-secondary">返回</a>
+                        <a href="../fees.php" class="btn btn-secondary">返回</a>
                     </form>
                 </div>
             </div>
@@ -79,4 +79,4 @@ $members = $stmt->fetchAll();
     </div>
 </div>
 
-<?php require_once '../includes/footer.php'; ?>
+<?php require_once '../../includes/footer.php'; ?>

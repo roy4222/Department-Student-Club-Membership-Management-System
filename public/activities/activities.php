@@ -1,6 +1,6 @@
 <?php
-require_once '../includes/header.php';
-require_once '../config/database.php';
+require_once '../../includes/header.php';
+require_once '../../config/database.php';
 
 // 處理活動相關操作
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -289,4 +289,4 @@ function viewParticipants(id, name) {
 }
 </script>
 
-<?php require_once '../includes/footer.php'; ?>
+<?php require_once '../../includes/footer.php'; ?>

@@ -27,7 +27,7 @@ session_start();
                             ?>
                         </div>
                         <?php endif; ?>
-                        <form action="login_process.php" method="POST">
+                        <form action="/week10/public/auth/login_process.php" method="POST">
                             <div class="form-group">
                                 <label for="student_id">學號</label>
                                 <input type="text" class="form-control" id="student_id" name="student_id" required>

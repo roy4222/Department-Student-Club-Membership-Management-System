@@ -2,7 +2,7 @@
 session_start();
 
 // 正確引入資料庫連接
-$conn = require_once '../config/database.php';
+$conn = require_once '../../config/database.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $student_id = $_POST['student_id'];
@@ -16,19 +16,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($user) {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['student_id'] = $user['student_id'];
-            $_SESSION['user_name'] = $user['name'];
+            $_SESSION['name'] = $user['name'];
             $_SESSION['role'] = $user['role'];
             
-            header("Location: dashboard.php");
+            header("Location: /week10/public/dashboard.php");
             exit();
         } else {
             $_SESSION['error'] = "學號或密碼錯誤";
-            header("Location: index.php");
+            header("Location: /week10/public/index.php");
             exit();
         }
     } catch(PDOException $e) {
         $_SESSION['error'] = "系統錯誤，請稍後再試";
-        header("Location: index.php");
+        header("Location: /week10/public/index.php");
         exit();
     }
 }

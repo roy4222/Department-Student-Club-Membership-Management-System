@@ -1,15 +1,24 @@
 <?php
-require_once '../includes/header.php';
-require_once '../config/database.php';
+require_once '../../includes/header.php';
+require_once '../../config/database.php';
 
 // 獲取會員ID
 $member_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 // 獲取會員資訊
 $stmt = $conn->prepare("
-    SELECT m.*, COUNT(DISTINCT ap.activity_id) as total_activities
+    SELECT 
+        m.*, 
+        COUNT(DISTINCT ap.activity_id) as total_activities,
+        GROUP_CONCAT(
+            DISTINCT 
+            CONCAT(p.name, ' (', DATE_FORMAT(mp.created_at, '%Y-%m-%d'), ')')
+            ORDER BY mp.created_at DESC
+        ) as positions
     FROM members m
     LEFT JOIN activity_participants ap ON m.id = ap.member_id
+    LEFT JOIN member_positions mp ON m.id = mp.member_id
+    LEFT JOIN positions p ON mp.position_id = p.id
     WHERE m.id = ?
     GROUP BY m.id
 ");
@@ -57,7 +66,7 @@ $attendanceRate = $totalActivities > 0 ? round(count($attendedActivities) / $tot
     <!-- 會員資訊卡片 -->
     <div class="card shadow-sm mb-4">
         <div class="card-body">
-            <div class="d-flex align-items-center mb-3">
+            <div class="d-flex align-items-center mb-4">
                 <div class="avatar bg-primary text-white rounded-circle me-3 d-flex align-items-center justify-content-center" 
                      style="width: 48px; height: 48px; font-size: 1.5rem;">
                     <?php echo strtoupper(mb_substr($member['name'], 0, 1)); ?>
@@ -68,6 +77,38 @@ $attendanceRate = $totalActivities > 0 ? round(count($attendedActivities) / $tot
                         <?php echo htmlspecialchars($member['student_id']); ?> | 
                         <?php echo htmlspecialchars($member['department']); ?>
                     </p>
+                </div>
+            </div>
+
+            <!-- 會員詳細資訊 -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-3">基本資訊</h6>
+                    <div class="mb-2">
+                        <i class="fas fa-envelope me-2 text-primary"></i>
+                        <?php echo htmlspecialchars($member['email']); ?>
+                    </div>
+                    <div class="mb-2">
+                        <i class="fas fa-phone me-2 text-primary"></i>
+                        <?php echo htmlspecialchars($member['phone']); ?>
+                    </div>
+                    <div class="mb-2">
+                        <i class="fas fa-calendar-alt me-2 text-primary"></i>
+                        入學時間：<?php echo htmlspecialchars($member['entry_date']); ?>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-3">職位記錄</h6>
+                    <?php 
+                    if ($member['positions']) {
+                        $positions = explode(',', $member['positions']);
+                        foreach ($positions as $position) {
+                            echo "<div class='badge bg-secondary mb-2 p-2'>" . htmlspecialchars($position) . "</div><br>";
+                        }
+                    } else {
+                        echo "<p class='text-muted'>無職位記錄</p>";
+                    }
+                    ?>
                 </div>
             </div>
             
@@ -156,4 +197,4 @@ $attendanceRate = $totalActivities > 0 ? round(count($attendedActivities) / $tot
     </div>
 </div>
 
-<?php require_once '../includes/footer.php'; ?>
+<?php require_once '../../includes/footer.php'; ?>

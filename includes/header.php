@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!isset($_SESSION['user_id'])) {
-    header("Location: index.php");
+    header("Location: /week10/public/index.php");
     exit();
 }
 ?>
@@ -17,8 +17,8 @@ if (!isset($_SESSION['user_id'])) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         :root {
-            --primary-color: #2563eb;
-            --secondary-color: #1d4ed8;
+            --primary-color: #2D7A6D;
+            --secondary-color: #48B5A3;
             --bg-color: #f8fafc;
             --text-color: #0f172a;
         }
@@ -34,67 +34,55 @@ if (!isset($_SESSION['user_id'])) {
 
         .navbar {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            padding: 0.75rem 1rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
         }
 
         .navbar-brand {
+            display: flex;
+            align-items: center;
             color: white !important;
             font-size: 1.25rem;
             font-weight: 600;
-            letter-spacing: 0.025em;
-            padding: 0.5rem 0.75rem;
+            padding: 0.5rem 1rem;
             border-radius: 0.5rem;
             transition: all 0.2s ease;
         }
 
-        .navbar-brand:hover {
-            background-color: rgba(255, 255, 255, 0.1);
+        .navbar-brand i {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
         }
 
         .nav-link {
             color: rgba(255, 255, 255, 0.9) !important;
             font-weight: 500;
-            padding: 0.5rem 0.75rem !important;
-            margin: 0 0.125rem;
+            padding: 0.5rem 1rem !important;
             border-radius: 0.5rem;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
         }
 
         .nav-link:hover {
             background-color: rgba(255, 255, 255, 0.1);
             color: white !important;
-            transform: translateY(-1px);
         }
 
         .nav-link.active {
-            background-color: rgba(255, 255, 255, 0.15) !important;
+            background-color: rgba(255, 255, 255, 0.15);
             color: white !important;
-        }
-
-        .navbar-toggler {
-            border: none;
-            padding: 0.5rem;
-            color: white;
-        }
-
-        .navbar-toggler:focus {
-            box-shadow: none;
         }
 
         .dropdown-menu {
             border: none;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             border-radius: 0.75rem;
             padding: 0.5rem;
-            margin-top: 0.5rem;
             min-width: 12rem;
         }
 
         .dropdown-item {
             padding: 0.625rem 1rem;
             border-radius: 0.5rem;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
         }
 
         .dropdown-item:hover {
@@ -104,6 +92,15 @@ if (!isset($_SESSION['user_id'])) {
 
         .dropdown-item i {
             width: 1.5rem;
+        }
+
+        @media (max-width: 991.98px) {
+            .navbar-collapse {
+                background: rgba(255, 255, 255, 0.1);
+                margin: 1rem -1rem -1rem;
+                padding: 1rem;
+                border-radius: 0.75rem;
+            }
         }
 
         main {
@@ -168,71 +165,66 @@ if (!isset($_SESSION['user_id'])) {
 <body>
     <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="dashboard.php">
-                <i class="fas fa-users-cog me-2"></i>
-                社團管理系統
+            <a class="navbar-brand" href="/week10/public/dashboard.php">
+                <i class="fas fa-users-gear"></i>
+                <span class="ms-2">社團管理系統</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <i class="fas fa-bars"></i>
+                <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
+                <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'active' : ''; ?>" 
-                           href="dashboard.php">
-                            <i class="fas fa-home me-2"></i>首頁
-                        </a>
-                    </li>
-                    <?php if (in_array($_SESSION['role'], ['admin', 'staff'])): ?>
-                    <li class="nav-item">
-                        <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'members.php' ? 'active' : ''; ?>" 
-                           href="members.php">
-                            <i class="fas fa-users me-2"></i>會員管理
+                        <a class="nav-link" href="/week10/public/dashboard.php">
+                            <i class="fas fa-home"></i> 首頁
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'activities.php' ? 'active' : ''; ?>" 
-                           href="activities.php">
-                            <i class="fas fa-calendar-alt me-2"></i>活動管理
+                        <a class="nav-link" href="/week10/public/members/members.php">
+                            <i class="fas fa-users"></i> 會員管理
                         </a>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="feesDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-dollar-sign me-2"></i>會費管理
-                        </a>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item" href="fees.php">
-                                <i class="fas fa-list me-2"></i>會費清單
-                            </a>
-                            <a class="dropdown-item" href="add_payment.php">
-                                <i class="fas fa-plus me-2"></i>新增繳費
-                            </a>
-                        </div>
-                    </li>
-                    <?php endif; ?>
-                    <?php if ($_SESSION['role'] == 'admin'): ?>
                     <li class="nav-item">
-                        <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'export_report.php' ? 'active' : ''; ?>" 
-                           href="export_report.php">
-                            <i class="fas fa-file-export me-2"></i>匯出報表
+                        <a class="nav-link" href="/week10/public/activities/activities.php">
+                            <i class="fas fa-calendar-alt"></i> 活動管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/week10/public/fees.php">
+                            <i class="fas fa-dollar-sign"></i> 會費管理
+                        </a>
+                    </li>
+                    <?php if ($_SESSION['role'] === 'admin'): ?>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/week10/public/exports/export_report.php">
+                            <i class="fas fa-file-export"></i> 匯出報表
                         </a>
                     </li>
                     <?php endif; ?>
-                </ul>
-                <ul class="navbar-nav">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user me-2"></i><?php echo htmlspecialchars($_SESSION['user_name']); ?>
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i>
+                            <?php 
+                            $displayName = isset($_SESSION['name']) ? $_SESSION['name'] : 
+                                         (isset($_SESSION['user_name']) ? $_SESSION['user_name'] : '未知使用者');
+                            $displayName = htmlspecialchars($displayName);
+                            $role = $_SESSION['role'] === 'admin' ? '管理員' : '會員';
+                            echo $displayName . ' <small class="text-light-50">(' . $role . ')</small>'; 
+                            ?>
                         </a>
-                        <div class="dropdown-menu dropdown-menu-end">
-                            <a class="dropdown-item" href="change_password.php">
-                                <i class="fas fa-key me-2"></i>修改密碼
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="logout.php">
-                                <i class="fas fa-sign-out-alt me-2"></i>登出
-                            </a>
-                        </div>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="/week10/public/auth/change_password.php">
+                                    <i class="fas fa-key me-2"></i>修改密碼
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="/week10/public/auth/logout.php">
+                                    <i class="fas fa-sign-out-alt me-2"></i>登出
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                 </ul>
             </div>

@@ -1,5 +1,5 @@
 <?php
-require_once('../includes/db_connect.php');
+require_once('../../config/database.php');
 
 header('Content-Type: text/html; charset=utf-8');
 
