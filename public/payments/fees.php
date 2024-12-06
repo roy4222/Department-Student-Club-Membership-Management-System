@@ -1,6 +1,6 @@
 <?php
-require_once '../includes/header.php';
-require_once '../config/database.php';
+require_once '../../includes/header.php';
+require_once '../../config/database.php';
 
 // 處理會費繳納
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -136,9 +136,14 @@ $latestPayment = !empty($payments) ? $payments[0]['payment_date'] : '無';
                                     </span>
                                 </td>
                                 <td>
-                                    <button class="btn btn-sm btn-outline-primary" onclick="printReceipt(<?php echo $payment['id']; ?>)">
-                                        <i class="fas fa-print me-1"></i>列印
-                                    </button>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="editPayment(<?php echo $payment['id']; ?>)">
+                                            <i class="fas fa-edit me-1"></i>編輯
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deletePayment(<?php echo $payment['id']; ?>)">
+                                            <i class="fas fa-trash me-1"></i>刪除
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -206,6 +211,34 @@ function printReceipt(paymentId) {
     window.open('print_receipt.php?id=' + paymentId, '_blank');
 }
 
+function editPayment(paymentId) {
+    window.location.href = 'edit_payment.php?id=' + paymentId;
+}
+
+function deletePayment(paymentId) {
+    if (confirm('確定要刪除此筆繳費記錄嗎？此操作無法復原。')) {
+        fetch('delete_payment.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'id=' + paymentId
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('刪除失敗：' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('刪除時發生錯誤，請稍後再試。');
+        });
+    }
+}
+
 // 初始化 Select2（如果需要的話）
 $(document).ready(function() {
     if ($.fn.select2) {
@@ -217,4 +250,4 @@ $(document).ready(function() {
 });
 </script>
 
-<?php require_once '../includes/footer.php'; ?>
+<?php require_once '../../includes/footer.php'; ?>

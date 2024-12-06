@@ -9,26 +9,33 @@ require_once '../../config/database.php';
 let memberFormModal;
 
 // 刪除會員
-function deleteMember(studentId) {
+function deleteMember(memberId) {
+    // 檢查是否要刪除自己的帳號
+    if (memberId == <?php echo $_SESSION['user_id']; ?>) {
+        alert('不能刪除自己的帳號！');
+        return;
+    }
+    
     if (confirm('確定要刪除此會員嗎？')) {
-        const form = document.createElement('form');
-        form.method = 'post';
-        form.action = '';
+        const formData = new FormData();
+        formData.append('id', memberId);
         
-        const actionInput = document.createElement('input');
-        actionInput.type = 'hidden';
-        actionInput.name = 'action';
-        actionInput.value = 'delete';
-        
-        const studentIdInput = document.createElement('input');
-        studentIdInput.type = 'hidden';
-        studentIdInput.name = 'student_id';
-        studentIdInput.value = studentId;
-        
-        form.appendChild(actionInput);
-        form.appendChild(studentIdInput);
-        document.body.appendChild(form);
-        form.submit();
+        fetch('member_api.php?action=delete', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert(data.message || '刪除失敗');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('發生錯誤，請稍後再試');
+        });
     }
 }
 
@@ -42,6 +49,7 @@ function loadMemberData(member) {
         
         // 設置表單欄位
         document.getElementById('memberId').value = member.id || '';
+        document.getElementById('formAction').value = 'edit';
         document.getElementById('studentId').value = member.student_id || '';
         document.getElementById('name').value = member.name || '';
         document.getElementById('department').value = member.department || '';
@@ -50,21 +58,33 @@ function loadMemberData(member) {
         document.getElementById('phone').value = member.phone || '';
         document.getElementById('entryDate').value = member.entry_date || '';
         
-        // 設置學號欄位為唯讀
-        document.getElementById('studentId').readOnly = true;
+        // 設置密碼提示
+        document.querySelector('.password-hint').textContent = '如不修改密碼可留空';
+        
+        // 設置職位容器的會員ID
+        const positionsContainer = document.getElementById('positionsContainer');
+        if (positionsContainer) {
+            positionsContainer.dataset.memberId = member.id;
+            console.log('Set member ID:', member.id); // 調試用
+        }
         
         // 設置職位
-        const positions = member.positions ? member.positions.split(',') : [];
-        console.log('Positions:', positions); // 調試用
-        const checkboxes = document.querySelectorAll('input[name="positions[]"]');
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = positions.includes(checkbox.value);
-        });
-
-        // 顯示 Modal
+        if (member.positions) {
+            // 從職位字串中提取職位ID
+            const positionIds = member.position_ids ? member.position_ids.split(',') : [];
+            console.log('Position IDs:', positionIds); // 調試用
+            
+            // 設置checkbox
+            const checkboxes = document.querySelectorAll('.position-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = positionIds.includes(checkbox.value);
+            });
+        }
+        
+        // 打開Modal
         memberFormModal.show();
     } catch (error) {
-        console.error('Error in loadMemberData:', error);
+        console.error('Error loading member data:', error);
         alert('載入會員資料時發生錯誤');
     }
 }
@@ -74,16 +94,29 @@ function resetMemberForm() {
     const form = document.getElementById('memberForm');
     form.reset();
     document.getElementById('memberId').value = '';
-    document.getElementById('studentId').readOnly = false;
+    
+    // 重設學號欄位為可編輯
+    const studentIdField = document.getElementById('studentId');
+    studentIdField.readOnly = false;
+    
     document.getElementById('memberFormModalLabel').textContent = '新增會員';
+    document.getElementById('formAction').value = 'add';
+    
+    // 設定密碼欄位為必填
+    document.getElementById('password').setAttribute('required', 'required');
+    document.querySelector('.password-hint').textContent = '新���員時必須設定密碼';
     
     // 清除所有職位選擇
     const checkboxes = document.querySelectorAll('input[name="positions[]"]');
     checkboxes.forEach(checkbox => checkbox.checked = false);
     
+    // 清除錯誤訊息
+    const formError = document.getElementById('formError');
+    formError.textContent = '';
+    formError.classList.add('d-none');
+    
     // 顯示 Modal
-    const modal = new bootstrap.Modal(document.getElementById('memberFormModal'));
-    modal.show();
+    memberFormModal.show();
 }
 
 // 儲存會員資料
@@ -109,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', function() {
             try {
                 const memberData = this.getAttribute('data-member');
-                console.log('Member data:', memberData); // 調試用
+                console.log('Member data:', memberData); // 試��
                 const member = JSON.parse(memberData);
                 loadMemberData(member);
             } catch (error) {
@@ -122,35 +155,57 @@ document.addEventListener('DOMContentLoaded', function() {
     // 為所有刪除按鈕添加事件監聽器
     document.querySelectorAll('.btn-delete-member').forEach(button => {
         button.addEventListener('click', () => {
-            const studentId = button.getAttribute('data-student-id');
-            deleteMember(studentId);
+            const memberId = button.getAttribute('data-member-id');
+            deleteMember(memberId);
         });
     });
+    
+    // Add event listener to the "Add Member" button
+    document.getElementById('addMemberBtn')?.addEventListener('click', resetMemberForm);
 });
 </script>
 
 <?php
+// 檢查是否為管理員
+$isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
+$currentUserId = $_SESSION['user_id'];
+
 // 處理新增/編輯會員
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // 檢查是否為管理員
+    if (!$isAdmin) {
+        echo '<div class="alert alert-danger" role="alert">您沒有權限執行此操作！</div>';
+        exit;
+    }
+    
     if (isset($_POST['action'])) {
         if ($_POST['action'] == 'add') {
-            // 新增會員基本資料
-            $stmt = $conn->prepare("INSERT INTO members (student_id, name, department, class, email, phone, entry_date) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([
-                $_POST['student_id'],
-                $_POST['name'],
-                $_POST['department'],
-                $_POST['class'],
-                $_POST['email'],
-                $_POST['phone'],
-                $_POST['entry_date']
-            ]);
-            
-            // 如果有選擇職位，新增職位記錄
-            if (!empty($_POST['position_id'])) {
-                $member_id = $conn->lastInsertId();
-                $stmt = $conn->prepare("INSERT INTO member_positions (member_id, position_id, start_date) VALUES (?, ?, CURDATE())");
-                $stmt->execute([$member_id, $_POST['position_id']]);
+            // 檢查學號是否已存在
+            $check_stmt = $conn->prepare("SELECT COUNT(*) FROM members WHERE student_id = ?");
+            $check_stmt->execute([$_POST['student_id']]);
+            if ($check_stmt->fetchColumn() > 0) {
+                echo '<div class="alert alert-danger" role="alert">此學號已經存在！</div>';
+            } else {
+                // 新增會員基本資料
+                $stmt = $conn->prepare("INSERT INTO members (student_id, name, department, class, email, phone, entry_date, password, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt->execute([
+                    $_POST['student_id'],
+                    $_POST['name'],
+                    $_POST['department'],
+                    $_POST['class'],
+                    $_POST['email'] ?? null,
+                    $_POST['phone'] ?? null,
+                    $_POST['entry_date'],
+                    md5($_POST['password']), // 使用 MD5 加密
+                    'member' // 預設角色
+                ]);
+                
+                // 如果有選擇職位，新增職位記錄
+                if (!empty($_POST['position_id'])) {
+                    $member_id = $conn->lastInsertId();
+                    $stmt = $conn->prepare("INSERT INTO member_positions (member_id, position_id, start_date) VALUES (?, ?, CURDATE())");
+                    $stmt->execute([$member_id, $_POST['position_id']]);
+                }
             }
         } elseif ($_POST['action'] == 'edit') {
             // 更新會員基本資料
@@ -216,7 +271,7 @@ $validColumns = ['student_id', 'name', 'department', 'activity_count'];
 $orderBy = in_array($orderBy, $validColumns) ? $orderBy : 'student_id';
 $order = strtolower($order) === 'desc' ? 'desc' : 'asc';
 
-// 獲取會員列表，包含活動參與次數
+// 獲取會員列表，包含活動參與次數和職位
 $query = "
     SELECT 
         m.*,
@@ -225,14 +280,19 @@ $query = "
             DISTINCT 
             CONCAT(p.name, ' (', DATE_FORMAT(mp.created_at, '%Y-%m-%d'), ')')
             ORDER BY mp.created_at DESC
-        ) as positions
+            SEPARATOR '||'
+        ) as positions,
+        GROUP_CONCAT(
+            DISTINCT mp.position_id
+            ORDER BY mp.created_at DESC
+        ) as position_ids
     FROM 
         members m
         LEFT JOIN activity_participants ap ON m.id = ap.member_id
         LEFT JOIN member_positions mp ON m.id = mp.member_id
         LEFT JOIN positions p ON mp.position_id = p.id
     GROUP BY 
-        m.id, m.student_id, m.name, m.department, m.class, m.email, m.phone, m.entry_date
+        m.id
     ORDER BY 
         $orderBy $order";
 
@@ -265,9 +325,11 @@ function getSortIcon($column, $currentOrderBy, $currentOrder) {
         <h2 class="mb-0">
             <i class="fas fa-users text-primary me-2"></i>會員管理
         </h2>
-        <button type="button" class="btn btn-primary btn-add-member">
-            <i class="fas fa-plus me-1"></i>新增會員
+        <?php if ($isAdmin): ?>
+        <button type="button" class="btn btn-primary btn-add-member" id="addMemberBtn">
+            <i class="fas fa-plus me-2"></i>新增會員
         </button>
+        <?php endif; ?>
     </div>
 
     <div class="card shadow-sm">
@@ -292,11 +354,7 @@ function getSortIcon($column, $currentOrderBy, $currentOrder) {
                             <th>聯繫方式</th>
                             <th>入學時間</th>
                             <th>曾任職位</th>
-                            <th>
-                                <a href="<?php echo getSortUrl('activity_count', $orderBy, $order); ?>" class="text-decoration-none text-dark">
-                                    活動參與 <?php echo getSortIcon('activity_count', $orderBy, $order); ?>
-                                </a>
-                            </th>
+                            <th>個人資料</th>
                             <th>操作</th>
                         </tr>
                     </thead>
@@ -321,31 +379,64 @@ function getSortIcon($column, $currentOrderBy, $currentOrder) {
                             <td>
                                 <?php 
                                 if ($member['positions']) {
-                                    $positions = explode(',', $member['positions']);
+                                    $positions = explode('||', $member['positions']);
                                     foreach ($positions as $position) {
-                                        echo "<div class='badge bg-secondary mb-1'>" . htmlspecialchars($position) . "</div><br>";
+                                        // 從職位字串中提取名稱和日期
+                                        if (preg_match('/(.+?) \((\d{4}-\d{2}-\d{2})\)/', $position, $matches)) {
+                                            $posName = $matches[1];
+                                            $posDate = $matches[2];
+                                            echo '<div class="badge bg-secondary mb-1">';
+                                            echo htmlspecialchars($posName);
+                                            echo ' <small class="text-white-50">(' . htmlspecialchars($posDate) . ')</small>';
+                                            echo '</div><br>';
+                                        }
                                     }
                                 } else {
-                                    echo "<span class='text-muted'>無</span>";
+                                    echo '<span class="text-muted">無</span>';
                                 }
                                 ?>
                             </td>
                             <td>
                                 <a href="member_activities.php?id=<?php echo $member['id']; ?>" 
-                                   class="btn btn-outline-primary btn-sm">
+                                   class="btn btn-primary btn-sm position-relative d-inline-flex align-items-center"
+                                   style="transition: all 0.2s ease-in-out;"
+                                   onmouseover="this.style.transform='translateY(-1px)'"
+                                   onmouseout="this.style.transform='translateY(0)'">
                                     <i class="fas fa-calendar-check me-1"></i>
-                                    <?php echo $member['activity_count']; ?> 次
+                                    活動記錄
+                                    <?php if($member['activity_count'] > 0): ?>
+                                    <span class="badge bg-white text-primary rounded-pill ms-2">
+                                        <?php echo $member['activity_count']; ?>
+                                    </span>
+                                    <?php endif; ?>
                                 </a>
                             </td>
-                            <td>
-                                <div class="btn-group">
-                                    <button type="button" class="btn btn-sm btn-outline-primary btn-edit-member" data-member="<?php echo htmlspecialchars(json_encode($member)); ?>">
+                            <td class="text-end">
+                                <?php if ($isAdmin): ?>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-primary btn-edit-member" 
+                                            data-member='<?php echo htmlspecialchars(json_encode([
+                                                'id' => $member['id'],
+                                                'student_id' => $member['student_id'],
+                                                'name' => $member['name'],
+                                                'department' => $member['department'],
+                                                'class' => $member['class'],
+                                                'email' => $member['email'],
+                                                'phone' => $member['phone'],
+                                                'entry_date' => $member['entry_date'],
+                                                'role' => $member['role'],
+                                                'positions' => $member['position_ids']
+                                            ])); ?>'>
                                         <i class="fas fa-edit me-1"></i>編輯
                                     </button>
-                                    <button type="button" class="btn btn-sm btn-outline-danger btn-delete-member" data-student-id="<?php echo $member['student_id']; ?>">
-                                        <i class="fas fa-trash-alt me-1"></i>刪除
+                                    <?php if ($member['id'] != $currentUserId): ?>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-danger btn-delete-member" 
+                                            data-member-id="<?php echo $member['id']; ?>">
+                                        <i class="fas fa-trash me-1"></i>刪除
                                     </button>
-                                </div>
+                                    <?php endif; ?>
+                                <?php endif; ?>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -359,5 +450,8 @@ function getSortIcon($column, $currentOrderBy, $currentOrder) {
 
 <!-- 會員表單Modal -->
 <?php include __DIR__ . '/member_form_modal.php'; ?>
+
+<!-- 編輯會員Modal -->
+<?php include __DIR__ . '/edit_member_modal.php'; ?>
 
 <?php require_once '../../includes/footer.php'; ?>

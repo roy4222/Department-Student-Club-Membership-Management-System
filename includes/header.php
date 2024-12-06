@@ -167,7 +167,7 @@ if (!isset($_SESSION['user_id'])) {
         <div class="container">
             <a class="navbar-brand" href="/week10/public/dashboard.php">
                 <i class="fas fa-users-gear"></i>
-                <span class="ms-2">社團管理系統</span>
+                <span class="ms-2">系學會管理系統</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -190,7 +190,7 @@ if (!isset($_SESSION['user_id'])) {
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/week10/public/fees.php">
+                        <a class="nav-link" href="/week10/public/payments/fees.php">
                             <i class="fas fa-dollar-sign"></i> 會費管理
                         </a>
                     </li>

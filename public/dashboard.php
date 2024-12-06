@@ -154,7 +154,7 @@ $activityRanking = $stmt->fetchAll();
                     <h5 class="card-title mb-4">核心功能</h5>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <a href="members.php" class="feature-link d-flex align-items-center p-3 border rounded">
+                            <a href="members/members.php" class="feature-link d-flex align-items-center p-3 border rounded">
                                 <div class="icon-shape bg-light-primary rounded-circle me-3">
                                     <i class="fas fa-user-cog text-primary"></i>
                                 </div>
@@ -165,7 +165,7 @@ $activityRanking = $stmt->fetchAll();
                             </a>
                         </div>
                         <div class="col-md-6">
-                            <a href="fees.php" class="feature-link d-flex align-items-center p-3 border rounded">
+                            <a href="payments/fees.php" class="feature-link d-flex align-items-center p-3 border rounded">
                                 <div class="icon-shape bg-light-success rounded-circle me-3">
                                     <i class="fas fa-dollar-sign text-success"></i>
                                 </div>
@@ -176,7 +176,7 @@ $activityRanking = $stmt->fetchAll();
                             </a>
                         </div>
                         <div class="col-md-6">
-                            <a href="activities.php" class="feature-link d-flex align-items-center p-3 border rounded">
+                            <a href="activities/activities.php" class="feature-link d-flex align-items-center p-3 border rounded">
                                 <div class="icon-shape bg-light-info rounded-circle me-3">
                                     <i class="fas fa-chart-line text-info"></i>
                                 </div>
@@ -187,7 +187,7 @@ $activityRanking = $stmt->fetchAll();
                             </a>
                         </div>
                         <div class="col-md-6">
-                            <a href="export_report.php" class="feature-link d-flex align-items-center p-3 border rounded">
+                            <a href="exports/export_report.php" class="feature-link d-flex align-items-center p-3 border rounded">
                                 <div class="icon-shape bg-light-warning rounded-circle me-3">
                                     <i class="fas fa-file-alt text-warning"></i>
                                 </div>
@@ -206,7 +206,7 @@ $activityRanking = $stmt->fetchAll();
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h5 class="card-title mb-0">即將舉辦活動</h5>
-                        <a href="activities.php" class="text-muted small">查看全部</a>
+                        <a href="activities/activities.php" class="text-muted small">查看全部</a>
                     </div>
                     <div class="upcoming-activities">
                         <?php foreach ($upcomingActivities as $activity): ?>
@@ -216,7 +216,7 @@ $activityRanking = $stmt->fetchAll();
                                 $interval = $today->diff($eventDate);
                                 $daysLeft = $interval->days;
                             ?>
-                            <a href="activities.php?id=<?php echo $activity['id']; ?>" class="activity-item d-flex align-items-center p-3 rounded-3 mb-2 text-decoration-none">
+                            <a href="activities/activities.php" class="activity-item d-flex align-items-center p-3 rounded-3 mb-2 text-decoration-none">
                                 <div class="activity-icon rounded-circle bg-light d-flex align-items-center justify-content-center me-3">
                                     <i class="fas fa-calendar text-primary"></i>
                                 </div>
@@ -265,9 +265,6 @@ $activityRanking = $stmt->fetchAll();
                                             <div class="progress-bar" role="progressbar" 
                                                  style="width: <?php echo $rank['activity_score']; ?>%"></div>
                                         </div>
-                                    </div>
-                                    <div class="ms-3">
-                                        <span class="badge bg-primary"><?php echo round($rank['activity_score']); ?>分</span>
                                     </div>
                                 </div>
                             </div>

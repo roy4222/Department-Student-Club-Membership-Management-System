@@ -39,7 +39,7 @@ session_start();
                             <button type="submit" class="btn btn-primary btn-block">登入</button>
                         </form>
                         <div class="mt-3 text-center">
-                            <small class="text-muted">預設密碼：password123</small>
+                            <small class="text-muted">預設密碼：2486</small>
                         </div>
                     </div>
                 </div>

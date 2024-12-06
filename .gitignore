@@ -5,7 +5,7 @@
 *.sublime-workspace
 
 # Configuration files
-config/database.php
+
 
 # Dependency directories
 vendor/

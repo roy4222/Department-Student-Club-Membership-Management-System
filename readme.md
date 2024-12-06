@@ -1,218 +1,299 @@
-# 社團會費管理系統開發指南
+社團會費管理系統使用指南
 
-## 1. 系統概述
-此系統用於管理社團成員資料及會費繳納狀況，預計使用人數約50人。系統提供會員管理、會費追蹤、通知發送及報表匯出等功能。
+這是什麼系統？
+想像你是一個社團的財務負責人,每學期要管理 50 個成員的會費繳納情況。你需要:
+- 記錄誰繳費了、誰還沒繳
+- 提醒成員繳費期限
+- 製作財務報表
+- 追蹤歷年紀錄
 
-## 2. 核心功能
+這個系統就是要幫你自動化處理這些工作！就像是一個數位化的帳本加上貼心的提醒小幫手。
 
-### 2.1 成員資料管理
+使用這個系統的好處
+
+🎯 省時省力
+- 不用再用 Excel 手動記帳
+- 自動發送繳費提醒
+- 一鍵產生各種報表
+
+🔍 資料更準確
+- 避免人工輸入錯誤
+- 歷史紀錄永久保存
+- 資料統計更精確
+
+💡 管理更有效
+- 即時掌握繳費狀況
+- 自動追蹤逾期帳款
+- 完整的權限管理
+
+系統是如何運作的？
+讓我們用餐廳來比喻這個系統：
+
+1. 前台服務生(使用者介面)
+- 接收使用者的要求
+- 顯示資料和結果
+- 提供友善的操作方式
+
+2. 廚房(後台程式)
+- 處理所有業務邏輯
+- 確保資料正確性
+- 執行各種運算
+
+3. 倉庫(資料庫)
+- 儲存所有資料
+- 管理資料關聯
+- 確保資料安全
+
+4. 外送員(通知系統)
+- 發送繳費提醒
+- 通知逾期資訊
+- 寄送重要通知
+
+資料是如何儲存的？
+就像每個家庭都有自己的相簿、記事本和收據,我們的系統也會把不同類型的資料分開儲存：
+
+👥 會員資料表 (members)
+就像是每個成員的身分證,記錄基本資料：
+- 學號 (student_id)
+- 姓名 (name)
+- 系所 (department)
+- 班級 (class)
+- 電子郵件 (email)
+- 電話 (phone)
+- 入學日期 (entry_date)
+- 角色 (role): 管理員或一般成員
+- 建立與更新時間 (created_at, updated_at)
+
+👔 職位相關資料 
+分成兩個表格來記錄,就像是社團的組織圖：
+
+1. 職位資料表 (positions)：
+- 職位名稱 (name)
+- 職位說明 (description)
+- 建立時間 (created_at)
+
+2. 會員職位關聯表 (member_positions)：
+記錄誰在什麼時候擔任什麼職位
+
+📅 活動相關資料
+分成兩個表格來記錄,就像是活動手冊：
+
+1. 活動資料表 (activities)：
+- 活動名稱 (name)
+- 活動說明 (description)
+- 活動地點 (location)
+- 活動日期 (event_date)
+- 報名截止日 (registration_deadline)
+- 人數上限 (max_participants)
+
+2. 活動參與記錄表 (activity_participants)：
+記錄誰參加了什麼活動,出席狀況如何
+
+🧾 會費繳納記錄表 (fee_payments)
+就像收據一樣,記錄每筆繳費：
+- 繳費學期 (semester)
+- 繳費金額 (amount)
+- 繳費日期 (payment_date)
+- 繳費方式 (payment_type): 現金或轉帳
+- 收據編號 (receipt_number)
+- 備註 (notes)
+- 繳費狀態 (status): 已繳、待繳、取消
+
+主要功能介紹
+
+1. 會員管理
 - 基本資料管理（姓名、學號、聯繫方式、入學時間）
 - 職位紀錄
 - 權限分級：社長、幹部、一般成員
 
-### 2.2 會費管理
+2. 會費管理
 - 每學期會費金額設定
 - 繳費狀態追蹤
 - 繳費紀錄管理
 
-### 2.3 通知系統
+3. 通知系統
 - 繳費期限前提醒
 - 逾期提醒
 - 通過Email發送通知
 
-### 2.4 報表功能
+4. 報表功能
 - Excel格式匯出
 - 包含欄位：姓名、學號、繳費日期、金額
 - 依照繳費狀態顯示會員清單
 
-## 3. 技術規格
+如何開始使用？
 
-### 3.1 開發環境
-- 後端：PHP
-- 資料庫：MySQL
-- 前端：HTML, CSS, JavaScript
-
-### 3.2 資料庫結構
-```sql
--- 成員資料表 (members)
-CREATE TABLE members (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    student_id VARCHAR(10) UNIQUE,
-    name VARCHAR(50),
-    email VARCHAR(100),
-    phone VARCHAR(20),
-    entry_date DATE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- 職位紀錄表 (positions)
-CREATE TABLE positions (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    member_id INT,
-    position_name VARCHAR(50),
-    start_date DATE,
-    end_date DATE,
-    FOREIGN KEY (member_id) REFERENCES members(id)
-);
-
--- 會費設定表 (fee_settings)
-CREATE TABLE fee_settings (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    semester VARCHAR(20),
-    amount DECIMAL(10,2),
-    due_date DATE,
-    created_by INT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (created_by) REFERENCES members(id)
-);
-
--- 繳費紀錄表 (payments)
-CREATE TABLE payments (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    member_id INT,
-    fee_setting_id INT,
-    amount DECIMAL(10,2),
-    payment_date DATE,
-    payment_method VARCHAR(50),
-    receipt_no VARCHAR(50),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (member_id) REFERENCES members(id),
-    FOREIGN KEY (fee_setting_id) REFERENCES fee_settings(id)
-);
-```
-
-## 4. 專案結構
-```
-project/
-├── config/                 # 配置文件
-│   ├── database.php       # 數據庫配置
-│   └── config.php         # 系統配置
-│
-├── public/                 # 公開訪問目錄
-│   ├── index.php          # 入口文件
-│   ├── assets/            # 靜態資源
-│   │   ├── css/          # CSS文件
-│   │   ├── js/           # JavaScript文件
-│   │   └── images/       # 圖片資源
-│   │
-│   └── uploads/           # 上傳文件目錄
-│
-├── src/                    # 源代碼目錄
-│   ├── Controllers/       # 控制器
-│   │   ├── AuthController.php
-│   │   ├── MemberController.php
-│   │   ├── FeeController.php
-│   │   └── ReportController.php
-│   │
-│   ├── Models/            # 模型
-│   │   ├── Member.php
-│   │   ├── Position.php
-│   │   ├── FeeSetting.php
-│   │   └── Payment.php
-│   │
-│   └── Utils/             # 工具類
-│       ├── Database.php
-│       ├── Auth.php
-│       └── Mailer.php
-│
-├── views/                  # 視圖文件
-│   ├── layouts/           # 布局模板
-│   ├── auth/              # 認證相關
-│   ├── members/           # 會員管理
-│   ├── fees/              # 會費管理
-│   └── reports/           # 報表相關
-│
-└── tests/                  # 測試文件
-```
-
-## 5. 開發階段規劃
-
-### 5.1 第一階段：基礎功能
-1. 專案環境搭建
-   - 設置開發環境
-   - 創建資料庫
-   - 配置基本路由
-
-2. 會員管理模塊
-   ```php
-   // MemberController.php 示例
-   class MemberController {
-       public function index() {
-           // 顯示會員列表
-       }
-       
-       public function create() {
-           // 創建新會員
-       }
-       
-       public function update($id) {
-           // 更新會員資料
-       }
-   }
-   ```
-
-3. 權限系統
-   ```php
-   // Auth.php 示例
-   class Auth {
-       public static function checkRole($role) {
-           // 檢查用戶權限
-       }
-       
-       public static function login($username, $password) {
-           // 用戶登入
-       }
-   }
-   ```
-
-### 5.2 第二階段：會費管理
-1. 會費設定功能
-2. 繳費紀錄管理
-3. 報表匯出功能
-
-### 5.3 第三階段：通知系統
-1. Email通知功能
-2. 提醒機制實作
-
-### 5.4 第四階段：系統優化
-1. 界面美化
-2. 功能優化
-3. 測試與除錯
-
-## 6. 部署指南
-
-### 6.1 環境要求
+系統需求
 - PHP >= 7.4
 - MySQL >= 5.7
 - Web服務器（Apache/Nginx）
 - Composer（PHP套件管理器）
 
-### 6.2 安裝步驟
-1. 克隆代碼庫
+安裝步驟
+就像煮菜一樣,讓我們一步一步來：
+
+1. 下載系統
 ```bash
 git clone [repository_url]
 cd club-fee-system
 ```
 
-2. 安裝依賴
+2. 安裝必要的工具
 ```bash
 composer install
 ```
 
-3. 配置環境
+3. 設定系統
 ```bash
 cp .env.example .env
-# 編輯 .env 文件設置數據庫連接等信息
+# 編輯 .env 檔案,設定資料庫連線等資訊
 ```
 
-4. 初始化數據庫
+4. 初始化資料庫
 ```bash
 php scripts/init_database.php
 ```
 
-## 7. 測試指南
+常見問題解答
 
-### 7.1 單元測試
+❓ 問題: 忘記密碼怎麼辦？
+✅ 解答: 請聯繫系統管理員重設密碼。
+
+❓ 問題: 如何修改會費金額？
+✅ 解答: 請在「會費設定」頁面進行修改。
+
+❓ 問題: 可以匯入舊的 Excel 資料嗎？
+✅ 解答: 可以,系統提供資料匯入功能。
+
+給開發者的資訊
+
+技術架構
+- 後端：PHP
+- 資料庫：MySQL
+- 前端：HTML, CSS, JavaScript
+
+專案結構
+```
+WEEK10/
+├── config/               # 配置文件目錄
+│   └── database.php     # 資料庫配置
+│
+├── includes/            # 共用組件目錄
+│   ├── header.php      # 頁面頭部
+│   └── footer.php      # 頁面底部
+│
+├── public/             # 公開訪問目錄
+│   ├── activities/    # 活動管理
+│   ├── api/          # API 接口
+│   ├── auth/         # 認證相關
+│   ├── css/          # CSS 樣式
+│   ├── exports/      # 匯出功能
+│   ├── members/      # 會員管理
+│   ├── payments/     # 付款管理
+│   ├── dashboard.php # 儀表板
+│   ├── fees.php      # 會費管理
+│   └── index.php     # 入口文件
+│
+├── sql/              # SQL 腳本目錄
+│   └── club_db.sql  # 資料庫結構
+│
+├── vendor/          # Composer 依賴目錄
+├── .gitignore      # Git 忽略文件
+├── composer.json   # Composer 配置
+├── composer.lock   # Composer 鎖定文件
+└── readme.md      # 專案說明文件
+
+
+資料庫結構
+```sql
+-- 建立資料庫
+CREATE DATABASE IF NOT EXISTS club_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE club_db;
+
+-- 會員資料表
+CREATE TABLE members (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    student_id VARCHAR(10) UNIQUE NOT NULL,
+    name VARCHAR(50) NOT NULL,
+    department VARCHAR(50) NOT NULL,
+    class VARCHAR(20) NOT NULL,
+    email VARCHAR(100),
+    phone VARCHAR(20),
+    entry_date DATE NOT NULL,
+    role ENUM('admin', 'member') DEFAULT 'member',
+    password VARCHAR(32) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_student_id (student_id),
+    INDEX idx_department_class (department, class)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 職位資料表
+CREATE TABLE positions (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 會員職位關聯表
+CREATE TABLE member_positions (
+    member_id INT NOT NULL,
+    position_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (member_id, position_id),
+    FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE,
+    FOREIGN KEY (position_id) REFERENCES positions(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 活動資料表
+CREATE TABLE activities (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    location VARCHAR(100),
+    event_date DATE NOT NULL,
+    registration_deadline DATE,
+    max_participants INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_event_date (event_date),
+    INDEX idx_registration_deadline (registration_deadline)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 活動參與記錄表
+CREATE TABLE activity_participants (
+    activity_id INT NOT NULL,
+    member_id INT NOT NULL,
+    attendance_status ENUM('registered', 'attended', 'absent') DEFAULT 'registered',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (activity_id, member_id),
+    FOREIGN KEY (activity_id) REFERENCES activities(id) ON DELETE CASCADE,
+    FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE,
+    INDEX idx_attendance_status (attendance_status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 會費繳納記錄表
+CREATE TABLE fee_payments (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    member_id INT NOT NULL,
+    semester VARCHAR(10) NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    payment_date DATE NOT NULL,
+    payment_type ENUM('cash', 'transfer') NOT NULL,
+    receipt_number VARCHAR(50),
+    notes TEXT,
+    status ENUM('paid', 'pending', 'cancelled') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE,
+    INDEX idx_semester (semester),
+    INDEX idx_payment_date (payment_date),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+測試方式
 ```bash
 # 運行所有測試
 ./vendor/bin/phpunit tests/
@@ -221,155 +302,8 @@ php scripts/init_database.php
 ./vendor/bin/phpunit tests/MemberTest.php
 ```
 
-### 7.2 功能測試清單
-- [ ] 會員註冊/登入
-- [ ] 會員資料管理
-- [ ] 會費設定
-- [ ] 繳費紀錄
-- [ ] 報表匯出
-- [ ] 郵件通知
-
-## 8. 安全性考慮
-1. SQL注入防護
-2. XSS防護
-3. CSRF防護
-4. 密碼加密
-5. 資料備份
-
-## 9. 維護指南
-1. 定期備份資料庫
-2. 檢查錯誤日誌
-3. 更新系統安全補丁
-4. 清理暫存文件
-
-## 10. 常見問題解答
-
-### 10.1 部署相關
-Q: 如何修改資料庫配置？
-A: 編輯 config/database.php 文件
-
-### 10.2 使用相關
-Q: 如何重置管理員密碼？
-A: 使用管理工具執行重置命令
-
-## 11. 聯絡方式
-如有任何問題，請聯繫系統管理員或在項目Issues中提出。
-
-## 12. 版本歷史
-- v0.1.0 - 基礎功能開發
-- v0.2.0 - 會費管理模塊
-- v0.3.0 - 通知系統
-- v1.0.0 - 正式發布
-
-## 13. 授權資訊
-此系統為內部使用，未經許可不得對外分享或商業使用.
-
-# 社團會員管理系統
-
-一個用於管理學生社團會員、活動和行政功能的網頁應用系統。
-
-## 最新更新（2024-01-09）
-
-### 1. 會員管理功能增強
-- 實作完整的會員 CRUD（新增、讀取、更新、刪除）功能
-- 統一的 API 端點（member_api.php）處理所有會員操作
-- 改進的錯誤處理和用戶反饋
-- 新增會員活動參與記錄功能
-
-### 2. 介面優化
-- 實作表格欄位排序功能（學號、姓名、科系、活動次數）
-- 改進的模態框處理機制
-- 更好的表單驗證和錯誤提示
-- 優化的資料顯示格式
-
-### 3. 資料庫操作改進
-- 使用交易確保資料一致性
-- 優化的 SQL 查詢
-- 改進的關聯資料處理
-- 更安全的資料庫操作
-
-### 4. 錯誤處理和除錯
-- 添加詳細的錯誤日誌
-- 改進的錯誤提示訊息
-- 完整的 API 錯誤處理
-- 前端除錯功能增強
-
-## 主要功能
-
-### 會員管理
-- 新增、編輯、刪除會員資料
-- 會員列表動態排序
-- 會員職位管理
-- 活動參與記錄追踪
-
-### 活動管理
-- 活動參與統計
-- 出席狀態追踪
-- 詳細的活動記錄
-
-### 介面功能
-- 響應式設計
-- 直覺的操作介面
-- 即時的用戶反饋
-- 現代化的視覺設計
-
-## 技術規格
-
-### 前端技術
-- Bootstrap 5.3.0
-- jQuery 3.7.0
-- FontAwesome 6.4.0
-- 現代化的 JavaScript
-
-### 後端技術
-- PHP 7.x
-- MySQL
-- PDO 資料庫連接
-- RESTful API 設計
-
-## 安裝需求
-
-### 系統需求
-- PHP 7.x 或更高版本
-- MySQL 資料庫
-- Apache 網頁伺服器
-- 現代網頁瀏覽器
-
-### 相依套件
-- Bootstrap 5.3.0
-- jQuery 3.7.0
-- FontAwesome 6.4.0
-
-## 安裝步驟
-
-1. 複製專案檔案到網頁伺服器
-2. 匯入資料庫結構（sql/club_db.sql）
-3. 設定資料庫連線（config/database.php）
-4. 確保檔案權限正確
-5. 透過瀏覽器訪問系統
-
-## 開發者注意事項
-
-### 程式碼組織
-- 使用 MVC 架構概念
-- 統一的 API 處理方式
-- 模組化的功能實作
-- 一致的程式碼風格
-
-### 安全考量
-- 資料驗證和清理
-- SQL 注入防護
-- XSS 防護
-- CSRF 防護
-
-### 未來規劃
-1. 更完整的權限控制
-2. 進階的報表功能
-3. 國際化支援
-4. 更多的客製化選項
-
-## 作者
-[您的名字]
-
-## 授權
-[授權資訊]
+---
+🔔 需要協助？
+- 技術支援：support@email.com
+- 使用手冊：[docs/user-guide.pdf]
+- 問題回報：[GitHub Issues]
