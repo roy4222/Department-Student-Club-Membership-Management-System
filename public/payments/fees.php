@@ -41,9 +41,11 @@ $latestPayment = !empty($payments) ? $payments[0]['payment_date'] : '無';
             <i class="fas fa-dollar-sign text-primary me-2"></i>
             <span>會費管理</span>
         </h2>
+        <?php if ($_SESSION['role'] === 'admin'): ?>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPaymentModal">
             <i class="fas fa-plus me-2"></i>新增繳費紀錄
         </button>
+        <?php endif; ?>
     </div>
 
     <!-- 統計卡片 -->
@@ -111,13 +113,15 @@ $latestPayment = !empty($payments) ? $payments[0]['payment_date'] : '無';
                             <th class="py-3">金額</th>
                             <th class="py-3">繳費日期</th>
                             <th class="py-3">狀態</th>
+                            <?php if ($_SESSION['role'] === 'admin'): ?>
                             <th class="py-3">操作</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (empty($payments)): ?>
                         <tr>
-                            <td colspan="7" class="text-center py-4 text-muted">
+                            <td colspan="<?php echo ($_SESSION['role'] === 'admin') ? '7' : '6'; ?>" class="text-center py-4 text-muted">
                                 <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
                                 目前沒有繳費記錄
                             </td>
@@ -135,6 +139,7 @@ $latestPayment = !empty($payments) ? $payments[0]['payment_date'] : '無';
                                         <?php echo $payment['status'] == 'paid' ? '已繳費' : '未繳費'; ?>
                                     </span>
                                 </td>
+                                <?php if ($_SESSION['role'] === 'admin'): ?>
                                 <td>
                                     <div class="btn-group">
                                         <button class="btn btn-sm btn-outline-primary" onclick="editPayment(<?php echo $payment['id']; ?>)">
@@ -145,6 +150,7 @@ $latestPayment = !empty($payments) ? $payments[0]['payment_date'] : '無';
                                         </button>
                                     </div>
                                 </td>
+                                <?php endif; ?>
                             </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -191,7 +197,13 @@ $latestPayment = !empty($payments) ? $payments[0]['payment_date'] : '無';
                         <label class="form-label">金額</label>
                         <div class="input-group">
                             <span class="input-group-text">$</span>
-                            <input type="number" class="form-control" name="amount" value="500" required>
+                            <input type="number" class="form-control" name="amount" required 
+                                   min="0" max="65535" 
+                                   oninput="validateAmount(this)"
+                                   onchange="validateAmount(this)">
+                        </div>
+                        <div class="invalid-feedback" id="amountError">
+                            金額必須在 0 到 65,535 之間
                         </div>
                     </div>
                 </div>
@@ -216,30 +228,48 @@ function editPayment(paymentId) {
 }
 
 function deletePayment(paymentId) {
-    if (confirm('確定要刪除此筆繳費記錄嗎？此操作無法復原。')) {
+    if (confirm('確定要刪除這筆繳費記錄嗎？')) {
         fetch('delete_payment.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: 'id=' + paymentId
+            body: 'payment_id=' + paymentId
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                alert(data.message);
                 location.reload();
             } else {
                 alert('刪除失敗：' + data.message);
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert('刪除時發生錯誤，請稍後再試。');
+            alert('發生錯誤：' + error);
         });
     }
 }
 
-// 初始化 Select2（如果需要的話）
+function validateAmount(input) {
+    const value = parseInt(input.value);
+    const error = document.getElementById('amountError');
+    const submitBtn = input.closest('form').querySelector('button[type="submit"]');
+    
+    if (value > 65535) {
+        input.classList.add('is-invalid');
+        error.style.display = 'block';
+        submitBtn.disabled = true;
+        return false;
+    } else {
+        input.classList.remove('is-invalid');
+        error.style.display = 'none';
+        submitBtn.disabled = false;
+        return true;
+    }
+}
+
+// 初始化 Select2（如果需���的話）
 $(document).ready(function() {
     if ($.fn.select2) {
         $('select[name="member_id"]').select2({

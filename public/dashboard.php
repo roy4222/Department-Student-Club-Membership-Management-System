@@ -82,16 +82,109 @@ $stmt = $conn->query("
     LEFT JOIN activity_participants ap ON m.id = ap.member_id
     GROUP BY m.id, m.name
     ORDER BY activity_count DESC
-    LIMIT 3
+    LIMIT 10
 ");
 $activityRanking = $stmt->fetchAll();
 ?>
+
+<style>
+    .stat-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+        text-decoration: none;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .icon-shape {
+        transition: transform 0.2s;
+    }
+    .stat-card:hover .icon-shape {
+        transform: scale(1.1);
+    }
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #2D7A6D 0%, #48B5A3 100%);
+    }
+    .bg-gradient-success {
+        background: linear-gradient(135deg, #2E8B57 0%, #3CB371 100%);
+    }
+    .bg-gradient-info {
+        background: linear-gradient(135deg, #0096c7 0%, #48cae4 100%);
+    }
+    .bg-gradient-warning {
+        background: linear-gradient(135deg, #ff9f1c 0%, #ffbf69 100%);
+    }
+    .icon-shape {
+        width: 48px;
+        height: 48px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .bg-light-primary {
+        background-color: rgba(45, 122, 109, 0.1);
+    }
+    .text-primary {
+        color: #2D7A6D !important;
+    }
+    .badge {
+        padding: 0.5em 1em;
+        font-weight: 500;
+        font-size: 0.875rem;
+    }
+    .upcoming-activities .activity-item:not(:last-child) {
+        border-bottom: 1px solid rgba(0,0,0,.05);
+    }
+    .avatar-initial {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+    .feature-link {
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .feature-link:hover {
+        background-color: rgba(0,0,0,0.03);
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        color: inherit;
+    }
+    .activity-item {
+        background-color: #fff;
+        transition: all 0.2s ease;
+        border: 1px solid rgba(0,0,0,.05);
+    }
+    .activity-item:hover {
+        background-color: #f8f9fa;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,.05);
+    }
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        background-color: #f8f9fa;
+    }
+    .activity-icon i {
+        font-size: 1.1rem;
+    }
+</style>
 
 <div class="container mt-4">
     <!-- 統計卡片 -->
     <div class="row g-3">
         <div class="col-md-3">
-            <div class="card bg-gradient-primary text-white h-100">
+            <a href="members/members.php" class="card bg-gradient-primary text-white h-100 stat-card">
                 <div class="card-body d-flex justify-content-between align-items-start">
                     <div>
                         <h6 class="card-title mb-0">總成員數</h6>
@@ -101,10 +194,10 @@ $activityRanking = $stmt->fetchAll();
                         <i class="fas fa-users fa-2x opacity-50"></i>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-3">
-            <div class="card bg-gradient-success text-white h-100">
+            <a href="payments/fees.php" class="card bg-gradient-success text-white h-100 stat-card">
                 <div class="card-body d-flex justify-content-between align-items-start">
                     <div>
                         <h6 class="card-title mb-0">總會費收入</h6>
@@ -114,10 +207,10 @@ $activityRanking = $stmt->fetchAll();
                         <i class="fas fa-dollar-sign fa-2x opacity-50"></i>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-3">
-            <div class="card bg-gradient-warning text-white h-100">
+            <a href="payments/fees.php" class="card bg-gradient-warning text-white h-100 stat-card">
                 <div class="card-body d-flex justify-content-between align-items-start">
                     <div>
                         <h6 class="card-title mb-0">未繳費人數</h6>
@@ -128,10 +221,10 @@ $activityRanking = $stmt->fetchAll();
                         <i class="fas fa-exclamation-circle fa-2x opacity-50"></i>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-3">
-            <div class="card bg-gradient-info text-white h-100">
+            <a href="activities/activities.php" class="card bg-gradient-info text-white h-100 stat-card">
                 <div class="card-body d-flex justify-content-between align-items-start">
                     <div>
                         <h6 class="card-title mb-0">本月活動數</h6>
@@ -142,7 +235,7 @@ $activityRanking = $stmt->fetchAll();
                         <i class="fas fa-calendar-check fa-2x opacity-50"></i>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 
@@ -181,7 +274,7 @@ $activityRanking = $stmt->fetchAll();
                                     <i class="fas fa-chart-line text-info"></i>
                                 </div>
                                 <div>
-                                    <h6 class="mb-1">活躍度追蹤</h6>
+                                    <h6 class="mb-1">活動管理</h6>
                                     <p class="mb-0 text-muted small">追蹤成員參與活動及貢獻度</p>
                                 </div>
                             </a>
@@ -250,25 +343,12 @@ $activityRanking = $stmt->fetchAll();
         <div class="col-md-12">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title mb-4">活躍度排行</h5>
-                    <div class="row">
-                        <?php foreach ($activityRanking as $rank): ?>
-                            <div class="col-md-4">
-                                <div class="d-flex align-items-center">
-                                    <div class="avatar-initial rounded-circle bg-light-primary me-3">
-                                        <?php echo mb_substr($rank['name'], 0, 1); ?>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-0"><?php echo htmlspecialchars($rank['name']); ?></h6>
-                                        <small class="text-muted">參與活動: <?php echo $rank['activity_count']; ?>次</small>
-                                        <div class="progress mt-2" style="height: 5px;">
-                                            <div class="progress-bar" role="progressbar" 
-                                                 style="width: <?php echo $rank['activity_score']; ?>%"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="card-title mb-0">活躍度排行榜</h5>
+                        <span class="badge bg-light-primary text-primary">TOP 10</span>
+                    </div>
+                    <div style="height: 400px; padding: 20px 10px;">
+                        <canvas id="activityChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -276,83 +356,127 @@ $activityRanking = $stmt->fetchAll();
     </div>
 </div>
 
-<style>
-.bg-gradient-primary {
-    background: linear-gradient(135deg, #2D7A6D 0%, #48B5A3 100%);
-}
-.bg-gradient-success {
-    background: linear-gradient(135deg, #2E8B57 0%, #3CB371 100%);
-}
-.bg-gradient-info {
-    background: linear-gradient(135deg, #0096c7 0%, #48cae4 100%);
-}
-.bg-gradient-warning {
-    background: linear-gradient(135deg, #ff9f1c 0%, #ffbf69 100%);
-}
-.icon-shape {
-    width: 48px;
-    height: 48px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.bg-light-primary {
-    background-color: rgba(45, 122, 109, 0.1);
-}
-.bg-light-success {
-    background-color: rgba(46, 139, 87, 0.1);
-}
-.bg-light-info {
-    background-color: rgba(0, 150, 199, 0.1);
-}
-.bg-light-warning {
-    background-color: rgba(255, 159, 28, 0.1);
-}
-.upcoming-activities .activity-item:not(:last-child) {
-    border-bottom: 1px solid rgba(0,0,0,.05);
-}
-.avatar-initial {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    color: var(--primary-color);
-}
-.feature-link {
-    text-decoration: none;
-    color: inherit;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
+<!-- 引入 Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-.feature-link:hover {
-    background-color: rgba(0,0,0,0.03);
-    transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    color: inherit;
-}
-.activity-item {
-    background-color: #fff;
-    transition: all 0.2s ease;
-    border: 1px solid rgba(0,0,0,.05);
-}
-.activity-item:hover {
-    background-color: #f8f9fa;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,.05);
-}
-.activity-icon {
-    width: 40px;
-    height: 40px;
-    background-color: #f8f9fa;
-}
-.activity-icon i {
-    font-size: 1.1rem;
-}
-</style>
+<script>
+// 活躍度排行圖表
+const activityData = <?php echo json_encode(array_map(function($item) {
+    return [
+        'name' => $item['name'],
+        'score' => round($item['activity_score'], 1)
+    ];
+}, $activityRanking)); ?>;
+
+const ctx = document.getElementById('activityChart').getContext('2d');
+
+// 定義漸層色
+const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+gradient.addColorStop(0, 'rgba(45, 122, 109, 0.8)');
+
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: activityData.map(item => item.name),
+        datasets: [{
+            label: '活動參與度',
+            data: activityData.map(item => item.score),
+            backgroundColor: gradient,
+            borderColor: 'rgba(45, 122, 109, 0.8)',
+            borderWidth: 1,
+            borderRadius: {
+                topLeft: 8,
+                topRight: 8
+            },
+            borderSkipped: false,
+            barThickness: 40,  // 增加柱狀圖寬度
+            maxBarThickness: 100,  // 設置最大寬度
+            hoverBackgroundColor: 'rgba(45, 122, 109, 0.9)'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: {
+            padding: {
+                top: 20
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100,
+                grid: {
+                    display: true,
+                    color: 'rgba(0, 0, 0, 0.05)',
+                    drawBorder: false
+                },
+                ticks: {
+                    font: {
+                        size: 12,
+                        family: "'Segoe UI', sans-serif"
+                    },
+                    padding: 10,
+                    callback: function(value) {
+                        return value + '%';
+                    }
+                },
+                border: {
+                    display: false
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                },
+                ticks: {
+                    font: {
+                        size: 12,
+                        family: "'Segoe UI', sans-serif"
+                    },
+                    padding: 5,
+                    maxRotation: 45,
+                    minRotation: 45
+                },
+                border: {
+                    display: false
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                titleColor: '#2D7A6D',
+                titleFont: {
+                    size: 14,
+                    weight: 'bold',
+                    family: "'Segoe UI', sans-serif"
+                },
+                bodyColor: '#2D7A6D',
+                bodyFont: {
+                    size: 13,
+                    family: "'Segoe UI', sans-serif"
+                },
+                padding: 15,
+                cornerRadius: 8,
+                displayColors: false,
+                borderColor: 'rgba(45, 122, 109, 0.1)',
+                borderWidth: 1,
+                callbacks: {
+                    title: function(tooltipItems) {
+                        return tooltipItems[0].label;
+                    },
+                    label: function(context) {
+                        return '參與度：' + context.parsed.y.toFixed(1) + '%';
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
 
 <?php require_once '../includes/footer.php'; ?>

@@ -57,6 +57,7 @@ function loadMemberData(member) {
         document.getElementById('email').value = member.email || '';
         document.getElementById('phone').value = member.phone || '';
         document.getElementById('entryDate').value = member.entry_date || '';
+        document.getElementById('role').value = member.role || 'member';
         
         // 設置密碼提示
         document.querySelector('.password-hint').textContent = '如不修改密碼可留空';
@@ -65,19 +66,19 @@ function loadMemberData(member) {
         const positionsContainer = document.getElementById('positionsContainer');
         if (positionsContainer) {
             positionsContainer.dataset.memberId = member.id;
-            console.log('Set member ID:', member.id); // 調試用
         }
         
         // 設置職位
-        if (member.positions) {
-            // 從職位字串中提取職位ID
-            const positionIds = member.position_ids ? member.position_ids.split(',') : [];
-            console.log('Position IDs:', positionIds); // 調試用
-            
-            // 設置checkbox
-            const checkboxes = document.querySelectorAll('.position-checkbox');
-            checkboxes.forEach(checkbox => {
+        if (member.position_ids) {
+            const positionIds = member.position_ids.split(',');
+            // 重置所有checkbox
+            document.querySelectorAll('.position-checkbox').forEach(checkbox => {
                 checkbox.checked = positionIds.includes(checkbox.value);
+            });
+        } else {
+            // 如果沒有職位，取消所有選取
+            document.querySelectorAll('.position-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
             });
         }
         
@@ -142,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', function() {
             try {
                 const memberData = this.getAttribute('data-member');
-                console.log('Member data:', memberData); // 試��
+                console.log('Member data:', memberData); // 調試用
                 const member = JSON.parse(memberData);
                 loadMemberData(member);
             } catch (error) {
@@ -154,8 +155,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 為所有刪除按鈕添加事件監聽器
     document.querySelectorAll('.btn-delete-member').forEach(button => {
-        button.addEventListener('click', () => {
-            const memberId = button.getAttribute('data-member-id');
+        button.addEventListener('click', function() {
+            const memberId = this.getAttribute('data-member-id');
             deleteMember(memberId);
         });
     });
@@ -355,13 +356,15 @@ function getSortIcon($column, $currentOrderBy, $currentOrder) {
                             <th>入學時間</th>
                             <th>曾任職位</th>
                             <th>個人資料</th>
+                            <?php if ($isAdmin): ?>
                             <th>操作</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (empty($members)): ?>
                         <tr>
-                            <td colspan="7" class="text-center py-4 text-muted">
+                            <td colspan="<?php echo $isAdmin ? '7' : '6'; ?>" class="text-center py-4 text-muted">
                                 <i class="fas fa-users fa-3x mb-3 d-block"></i>
                                 目前有會員資料
                             </td>
@@ -411,33 +414,31 @@ function getSortIcon($column, $currentOrderBy, $currentOrder) {
                                     <?php endif; ?>
                                 </a>
                             </td>
+                            <?php if ($isAdmin): ?>
                             <td class="text-end">
-                                <?php if ($isAdmin): ?>
-                                    <button type="button" 
-                                            class="btn btn-sm btn-outline-primary btn-edit-member" 
-                                            data-member='<?php echo htmlspecialchars(json_encode([
-                                                'id' => $member['id'],
-                                                'student_id' => $member['student_id'],
-                                                'name' => $member['name'],
-                                                'department' => $member['department'],
-                                                'class' => $member['class'],
-                                                'email' => $member['email'],
-                                                'phone' => $member['phone'],
-                                                'entry_date' => $member['entry_date'],
-                                                'role' => $member['role'],
-                                                'positions' => $member['position_ids']
-                                            ])); ?>'>
-                                        <i class="fas fa-edit me-1"></i>編輯
-                                    </button>
-                                    <?php if ($member['id'] != $currentUserId): ?>
-                                    <button type="button" 
-                                            class="btn btn-sm btn-outline-danger btn-delete-member" 
-                                            data-member-id="<?php echo $member['id']; ?>">
-                                        <i class="fas fa-trash me-1"></i>刪除
-                                    </button>
-                                    <?php endif; ?>
+                                <button type="button" class="btn btn-outline-primary btn-sm me-1 btn-edit-member" 
+                                        data-member='<?php echo htmlspecialchars(json_encode([
+                                            "id" => $member["id"],
+                                            "student_id" => $member["student_id"],
+                                            "name" => $member["name"],
+                                            "department" => $member["department"],
+                                            "class" => $member["class"],
+                                            "email" => $member["email"],
+                                            "phone" => $member["phone"],
+                                            "entry_date" => $member["entry_date"],
+                                            "role" => $member["role"],
+                                            "position_ids" => isset($member["position_ids"]) ? $member["position_ids"] : ""
+                                        ], JSON_HEX_APOS | JSON_HEX_QUOT)); ?>'>
+                                    <i class="fas fa-edit me-1"></i>編輯
+                                </button>
+                                <?php if ($member['id'] != $_SESSION['user_id']): ?>
+                                <button type="button" class="btn btn-outline-danger btn-sm btn-delete-member" 
+                                        data-member-id="<?php echo $member['id']; ?>">
+                                    <i class="fas fa-trash me-1"></i>刪除
+                                </button>
                                 <?php endif; ?>
                             </td>
+                            <?php endif; ?>
                         </tr>
                         <?php endforeach; ?>
                         <?php endif; ?>

@@ -8,8 +8,8 @@
                 <h5 class="modal-title" id="editMemberModalLabel">編輯會員</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <form id="editMemberForm" method="post">
+            <form id="editMemberForm" method="post">
+                <div class="modal-body">
                     <input type="hidden" id="editMemberId" name="id">
                     <input type="hidden" name="action" value="edit">
                     
@@ -65,7 +65,10 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">職位</label>
+                        <label class="form-label d-block">職位</label>
+                        <div class="mb-2" id="currentPositions">
+                            <!-- 這裡會顯示目前的職位 -->
+                        </div>
                         <div id="editPositionsContainer">
                             <?php
                             // 獲取所有職位
@@ -83,21 +86,22 @@
                             ?>
                         </div>
                     </div>
-                    
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                        <button type="submit" class="btn btn-primary">儲存</button>
-                    </div>
-                </form>
-            </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">儲存</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 <script>
+let editMemberModal;
+
 document.addEventListener('DOMContentLoaded', function() {
     // 初始化編輯 Modal
-    const editMemberModal = new bootstrap.Modal(document.getElementById('editMemberModal'));
+    editMemberModal = new bootstrap.Modal(document.getElementById('editMemberModal'));
     
     // 為編輯按鈕添加事件監聽器
     document.querySelectorAll('.btn-edit-member').forEach(button => {
@@ -111,6 +115,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error parsing member data:', error);
                 alert('載入會員資料時發生錯誤');
             }
+        });
+    });
+
+    // 為所有關閉按鈕添加事件監聽器
+    document.querySelectorAll('[data-bs-dismiss="modal"]').forEach(button => {
+        button.addEventListener('click', () => {
+            editMemberModal.hide();
         });
     });
 
@@ -137,6 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                editMemberModal.hide();
                 window.location.reload();
             } else {
                 const formError = document.getElementById('editFormError');
@@ -170,15 +182,27 @@ function loadEditMemberData(member) {
         checkbox.checked = false;
     });
     
-    // 設置會員的職位
-    if (member.positions) {
-        const positionIds = member.positions.split(',');
+    // 顯示目前的職位
+    const currentPositionsDiv = document.getElementById('currentPositions');
+    currentPositionsDiv.innerHTML = '';
+    
+    if (member.position_ids) {
+        const positionIds = member.position_ids.split(',');
         positionIds.forEach(id => {
             const checkbox = document.querySelector(`#editPosition${id}`);
             if (checkbox) {
                 checkbox.checked = true;
+                // 添加當前職位的顯示
+                const badge = document.createElement('span');
+                badge.className = 'badge bg-secondary me-1 mb-1';
+                badge.textContent = checkbox.nextElementSibling.textContent;
+                currentPositionsDiv.appendChild(badge);
             }
         });
+    }
+    
+    if (currentPositionsDiv.children.length === 0) {
+        currentPositionsDiv.innerHTML = '<span class="text-muted">目前無擔任職位</span>';
     }
 }
 </script>

@@ -1,6 +1,10 @@
 <?php
 require_once '../../config/database.php';
 
+// 檢查用戶角色
+session_start();
+$isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
+
 // 檢查是否為AJAX請求
 if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
     header('Content-Type: application/json');
@@ -71,13 +75,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 INSERT INTO activities (
                     name, 
                     description, 
+                    location, 
                     event_date, 
                     max_participants
-                ) VALUES (?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?)
             ");
             $stmt->execute([
                 $_POST['name'],
                 $_POST['description'],
+                $_POST['location'],
                 $_POST['event_date'],
                 $_POST['max_participants']
             ]);
@@ -150,9 +156,11 @@ $activities = $conn->query("
             <i class="fas fa-calendar-alt"></i> 活動管理
             <small class="text-muted fs-6">（共 <?php echo count($activities); ?> 個活動）</small>
         </h2>
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addActivityModal">
+        <?php if ($isAdmin): ?>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addActivityModal">
             <i class="fas fa-plus"></i> 新增活動
         </button>
+        <?php endif; ?>
     </div>
 
     <!-- 活動列表 -->
@@ -197,10 +205,12 @@ $activities = $conn->query("
                                 onclick="event.stopPropagation(); viewParticipants(<?php echo $activity['id']; ?>, '<?php echo htmlspecialchars($activity['name']); ?>')">
                             <i class="fas fa-list"></i> 查看參與者
                         </button>
+                        <?php if ($isAdmin): ?>
                         <button class="btn btn-outline-success btn-sm" 
-                                onclick="event.stopPropagation(); addParticipants(<?php echo $activity['id']; ?>, '<?php echo htmlspecialchars($activity['name']); ?>')">
+                                onclick="event.stopPropagation(); addParticipant(<?php echo $activity['id']; ?>, '<?php echo htmlspecialchars($activity['name']); ?>')">
                             <i class="fas fa-user-plus"></i> 新增參與者
                         </button>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <div class="card-footer bg-transparent border-0 text-muted small">
@@ -219,9 +229,7 @@ $activities = $conn->query("
                     <h5 class="modal-title">
                         <i class="fas fa-plus-circle"></i> 新增活動
                     </h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form method="POST">
                     <div class="modal-body">
@@ -235,6 +243,11 @@ $activities = $conn->query("
                             <textarea class="form-control" name="description" rows="3"></textarea>
                         </div>
                         <div class="form-group mb-3">
+                            <label>地點</label>
+                            <input type="text" class="form-control" name="location" required 
+                                   placeholder="請輸入活動地點">
+                        </div>
+                        <div class="form-group mb-3">
                             <label>日期</label>
                             <input type="date" class="form-control" name="event_date" required>
                         </div>
@@ -246,7 +259,7 @@ $activities = $conn->query("
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
                         <button type="submit" class="btn btn-primary">新增</button>
                     </div>
                 </form>
@@ -262,9 +275,7 @@ $activities = $conn->query("
                     <h5 class="modal-title">
                         <i class="fas fa-users"></i> <span id="view_activity_name"></span>
                     </h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div id="participantsList"></div>
@@ -281,9 +292,7 @@ $activities = $conn->query("
                     <h5 class="modal-title">
                         <i class="fas fa-user-plus"></i> 新增參與者
                     </h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <h6 class="text-muted mb-3" id="add_activity_name"></h6>
@@ -297,7 +306,7 @@ $activities = $conn->query("
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
                             <button type="submit" class="btn btn-primary">新增</button>
                         </div>
                     </form>
@@ -314,9 +323,7 @@ $activities = $conn->query("
                     <h5 class="modal-title">
                         <i class="fas fa-calendar-alt"></i> 活動詳細資訊
                     </h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
@@ -363,12 +370,14 @@ $activities = $conn->query("
                                     <button class="btn btn-outline-primary btn-block mb-2" onclick="viewParticipantsList()">
                                         <i class="fas fa-users"></i> 管理參與者
                                     </button>
+                                    <?php if ($isAdmin): ?>
                                     <button class="btn btn-outline-success btn-block mb-2" onclick="addNewParticipant()">
                                         <i class="fas fa-user-plus"></i> 新增參與者
                                     </button>
                                     <button class="btn btn-outline-danger btn-block" onclick="deleteActivity()">
                                         <i class="fas fa-trash"></i> 刪除活動
                                     </button>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                             
@@ -392,6 +401,8 @@ $activities = $conn->query("
     </div>
 
     <script>
+    // Pass PHP isAdmin variable to JavaScript
+    const isAdmin = <?php echo $isAdmin ? 'true' : 'false'; ?>;
     let currentActivityId = null;
 
     function viewActivityDetails(id) {
@@ -453,37 +464,23 @@ $activities = $conn->query("
         addParticipants(currentActivityId, $('#detail_activity_name').text());
     }
 
-    function viewParticipants(id, name) {
-        $('#activityDetailsModal').modal('hide');  // 確保詳細資modal已關閉
-        document.getElementById('view_activity_name').textContent = '活動：' + name;
-        // 使用 AJAX 獲取參與者列表
-        $.get('get_participants.php?activity_id=' + id, function(data) {
-            if (data.length === 0) {
-                $('#participantsList').html('<p class="text-muted">目前還沒有參與者</p>');
-            } else {
-                let html = '<div class="table-responsive"><table class="table table-hover">';
-                html += '<thead><tr><th>學號</th><th>姓名</th><th>報名時間</th><th>操作</th></tr></thead><tbody>';
-                data.forEach(function(participant) {
-                    html += `<tr>
-                        <td>${participant.student_id}</td>
-                        <td>${participant.name}</td>
-                        <td>${participant.registration_time}</td>
-                        <td>
-                            <button class="btn btn-danger btn-sm" 
-                                    onclick="deleteParticipant(${id}, ${participant.member_id}, '${participant.name}')">
-                                <i class="fas fa-trash"></i> 刪除
-                            </button>
-                        </td>
-                    </tr>`;
-                });
-                html += '</tbody></table></div>';
-                $('#participantsList').html(html);
-            }
+    function viewParticipants(activityId, activityName) {
+        $('#view_activity_name').text('活動：' + activityName);
+        
+        // 載入參與者列表
+        $.get('get_participants.php', { activity_id: activityId }, function(response) {
+            $('#participantsList').html(response);
             $('#viewParticipantsModal').modal('show');
+        }).fail(function() {
+            alert('載入參與者列表失敗');
         });
     }
 
     function deleteParticipant(activityId, memberId, memberName) {
+        if (!isAdmin) {
+            alert('您沒有權限執行此操作');
+            return;
+        }
         if (confirm(`確定要移除參與者 ${memberName} 嗎？`)) {
             $.ajax({
                 url: 'activities.php',
@@ -544,6 +541,49 @@ $activities = $conn->query("
                     checkboxContainer.innerHTML += checkbox;
                 });
                 
+                $('#addParticipantsModal').modal('show');
+            })
+            .catch(error => {
+                alert('載入會員列表失敗：' + error.message);
+            });
+    }
+
+    function addParticipant(id, name) {
+        // 載入可選的會員
+        fetch('get_available_members.php?activity_id=' + id)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                const checkboxContainer = document.getElementById('members-checkbox-list');
+                checkboxContainer.innerHTML = '';
+                
+                if (data.length === 0) {
+                    checkboxContainer.innerHTML = '<p class="text-muted">沒有可新增的會員</p>';
+                    return;
+                }
+                
+                data.forEach(member => {
+                    const checkbox = `
+                        <div class="custom-control custom-checkbox mb-2">
+                            <input type="checkbox" class="custom-control-input" 
+                                   id="member_${member.id}" 
+                                   name="member_ids[]" 
+                                   value="${member.id}">
+                            <label class="custom-control-label" for="member_${member.id}">
+                                ${member.name} (${member.student_id})
+                            </label>
+                        </div>
+                    `;
+                    checkboxContainer.innerHTML += checkbox;
+                });
+                
+                // Set the activity name and ID in the modal
+                document.getElementById('add_activity_name').textContent = '活動：' + name;
+                document.getElementById('activity_id').value = id;
+                
+                // Show the modal
                 $('#addParticipantsModal').modal('show');
             })
             .catch(error => {

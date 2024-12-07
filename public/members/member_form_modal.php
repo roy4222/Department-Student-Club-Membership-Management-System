@@ -8,8 +8,8 @@
                 <h5 class="modal-title" id="memberFormModalLabel">新增會員</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <form id="memberForm" method="post" autocomplete="on">
+            <form id="memberForm" method="post" autocomplete="on">
+                <div class="modal-body">
                     <input type="hidden" id="memberId" name="id" autocomplete="off">
                     <input type="hidden" name="action" id="formAction" value="add" autocomplete="off">
                     
@@ -89,13 +89,12 @@
                             </div>
                         </div>
                     </div>
-                                    
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                        <button type="submit" class="btn btn-primary">儲存</button>
-                    </div>
-                </form>
-            </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">儲存</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -105,6 +104,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // 初始化 Modal
     memberFormModal = new bootstrap.Modal(document.getElementById('memberFormModal'));
     
+    // 為所有關閉按鈕添加事件監聽器
+    document.querySelectorAll('[data-bs-dismiss="modal"]').forEach(button => {
+        button.addEventListener('click', () => {
+            memberFormModal.hide();
+        });
+    });
+
     // 表單提交處理
     document.getElementById('memberForm').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -124,6 +130,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 // 成功時重新載入頁面
                 memberFormModal.hide();
+                window.location.reload();
             }
         })
         .catch(error => {
@@ -219,20 +226,26 @@ const positionsContainer = document.getElementById('positionsContainer');
 positionCheckboxes.forEach(checkbox => {
     checkbox.addEventListener('change', function() {
         const memberId = positionsContainer.dataset.memberId;
+        // 如果是新增會員的情況，不需要即時更新職位
+        if (document.getElementById('formAction').value === 'add') {
+            return; // 直接返回，不執行更新
+        }
+        
+        // 編輯會員時的職位更新邏輯
         if (!memberId) {
             console.error('會員ID不存在');
             checkbox.checked = !checkbox.checked; // 恢復原狀態
             return;
         }
 
-        console.log('Member ID:', memberId); // 調試用
+        console.log('Member ID:', memberId);
 
         // 收集所有選中的職位
         const selectedPositions = Array.from(positionCheckboxes)
             .filter(cb => cb.checked)
             .map(cb => cb.value);
 
-        console.log('Selected positions:', selectedPositions); // 調試用
+        console.log('Selected positions:', selectedPositions);
 
         // 發送AJAX請求更新職位
         fetch('update_member_positions.php', {

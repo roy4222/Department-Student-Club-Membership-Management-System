@@ -9,7 +9,7 @@
                 <p class="mb-0 text-muted">
                     <span class="me-2">&copy; <?php echo date('Y'); ?> 社團管理系統</span>
                     <span class="mx-2">|</span>
-                    <span>版本 1.0.0</span>
+                    <span>版本 10.0.0</span>
                 </p>
                 <ul class="nav">
                     <li class="nav-item">

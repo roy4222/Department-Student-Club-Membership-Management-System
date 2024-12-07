@@ -10,16 +10,27 @@ if (!in_array($_SESSION['role'], ['admin', 'staff'])) {
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
+        // 驗證金額
+        $amount = intval($_POST['amount']);
+        if ($amount > 65535) {
+            throw new Exception("金額超過上限（最大值：65,535）");
+        }
+        if ($amount < 0) {
+            throw new Exception("金額不能為負數");
+        }
+
         $stmt = $conn->prepare("INSERT INTO fee_payments (member_id, semester, amount, payment_date, status) VALUES (?, ?, ?, ?, 'paid')");
         $stmt->execute([
             $_POST['member_id'],
             $_POST['semester'],
-            $_POST['amount'],
+            $amount,
             $_POST['payment_date']
         ]);
         $success = "繳費記錄已成功新增";
     } catch (PDOException $e) {
         $error = "新增失敗：" . $e->getMessage();
+    } catch (Exception $e) {
+        $error = $e->getMessage();
     }
 }
 
