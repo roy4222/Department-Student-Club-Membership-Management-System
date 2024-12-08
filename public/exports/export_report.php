@@ -208,10 +208,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <i class="fas fa-calendar-alt text-primary me-2"></i>學期
                             </label>
                             <select name="semester" id="semester" class="form-select form-select-lg">
-                                <option value="all">全部</option>
                                 <option value="112-2">112-2</option>
-                                <option value="112-1">112-1</option>
-                                <option value="111-2">111-2</option>
                             </select>
                         </div>
 

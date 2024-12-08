@@ -189,7 +189,6 @@ $latestPayment = !empty($payments) ? $payments[0]['payment_date'] : '無';
                     <div class="mb-3">
                         <label class="form-label">學期</label>
                         <select class="form-select" name="semester" required>
-                            <option value="112-1">112-1</option>
                             <option value="112-2" selected>112-2</option>
                         </select>
                     </div>
