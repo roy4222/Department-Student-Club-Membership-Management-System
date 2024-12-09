@@ -181,7 +181,7 @@ INSERT INTO activity_participants (activity_id, member_id, attendance_status) VA
 INSERT INTO fee_payments (member_id, semester, amount, payment_date, payment_type, notes, status) VALUES 
 (2, '112-2', 500.00, '2024-02-15', 'cash', '', 'paid'),    -- 溫水
 (3, '112-2', 500.00, '2024-02-16', 'transfer', '', 'paid'), -- 佳樹
-(4, '112-1', 500.00, '2023-09-20', 'cash', '', 'paid'),    -- 八奈見
-(5, '112-1', 500.00, '2023-09-21', 'transfer', '', 'paid'), -- 檸檬
+(4, '112-2', 500.00, '2023-09-20', 'cash', '', 'paid'),    -- 八奈見
+(5, '112-2', 500.00, '2023-09-21', 'transfer', '', 'paid'), -- 檸檬
 (8, '112-2', 500.00, '2024-02-19', 'cash', '', 'paid'),    -- 館長
 (9, '112-2', 500.00, '2024-02-20', 'transfer', '', 'paid'); -- 統神
